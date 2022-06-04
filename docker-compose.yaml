@@ -1,0 +1,17 @@
+version: "3"
+services:
+    my_njs:
+        build:
+            context: .
+            dockerfile: Dockerfile.dev
+        ports:
+            - 33003:3000
+        volumes:
+            - .:/usr/src/app
+            - /usr/src/app/node_modules
+        stdin_open: true
+        
+        command:
+            - /bin/sh
+        
+        # 33003:3000 ==> 호스트의 포트:도커 내부의 포트
