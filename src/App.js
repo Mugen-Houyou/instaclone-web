@@ -25,11 +25,8 @@ function App() {
         <Router>
           <Routes> {/* Switch는 한번에 딱 하나의 Route만 render시켜줘.*/}
             <Route path={routes.home} exact element={ /* exact는 정확히 /에 해당하는 것만. */
-              isLoggedIn ?
-                <Home  />
-                :
-                <Login  />
-            } /> 
+              isLoggedIn ?<Home  />:<Login  />} 
+            /> 
 
             {!isLoggedIn ? (
               <Route path={routes.signUp} element={<>
