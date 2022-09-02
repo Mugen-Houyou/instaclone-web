@@ -1,11 +1,10 @@
 import styled from "styled-components";
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFacebookF, faInstagram } from "@fortawesome/free-brands-svg-icons";
 import { Helmet, HelmetProvider } from "react-helmet-async";
 import { gql, useMutation } from "@apollo/client";
-import { toBeEmpty } from "@testing-library/jest-dom/dist/matchers";
 
 import { darkModeVar, isLoggedInVar, logUserIn } from "../apollo";
 import routes from "../routes";
@@ -34,14 +33,17 @@ const FacebookLogin = styled.div`
   }
 `;
 
+const Notification = styled.div`
+  color: #2ecc71;
+`;
+
 const LOGIN_MUTATION = gql`
   mutation login_mut($username: String!, $password: String!) {
     login(username: $username, password: $password) {
       ok
       token
       error
-    }
-  }
+  }}
 `;
 
 function Login({ setIsLoggedIn }) {
@@ -49,6 +51,10 @@ function Login({ setIsLoggedIn }) {
 
   // const [potato, setPotato]  =useState(false);
   // const togglePotato = () => setPotato((current) => !current);
+
+  const location = useLocation();
+  console.log(location)
+
   const {
     register,
     handleSubmit,
@@ -56,7 +62,13 @@ function Login({ setIsLoggedIn }) {
     getValues,
     setError,
     clearErrors
-  } = useForm({mode: "onChange",}); //// 아래 <Input>와 같이 씀. ref={register}와 name=""를 붙여야 함.
+  } = useForm({
+    mode: "onChange",
+    defaultValues:{
+      username: location?.state?.username || "",
+      password: location?.state?.password || "",
+    }
+  }); //// 아래 <Input>와 같이 씀. ref={register}와 name=""를 붙여야 함.
 
   const onSubmitValid = (data) => {
     //console.log("onSubmitValid: TRUE");
@@ -79,6 +91,9 @@ function Login({ setIsLoggedIn }) {
     <FormBox>
       <InstaLogo />
       <h1>InstaClone</h1>
+      <Notification>
+        {location?.state?.message /* location이 있다면 state이 있다면 message를 표시. */}
+      </Notification>
       <form onSubmit={handleSubmit(onSubmitValid)}>
         <Input
           {...register("username", {

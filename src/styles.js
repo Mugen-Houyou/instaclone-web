@@ -2,8 +2,8 @@ import { createGlobalStyle } from "styled-components"
 import reset from "styled-reset";
 
 export const lightTheme = {
-  fontColor: "#2C2C2C",
-  bgColor: "lightgray",
+  fontColor: "rgb(38,38,38)",
+  bgColor: "#FAFAFA",
   accent: "#0095f6",
   borderColor: "rgb(219,219,219)",
 }
@@ -22,7 +22,7 @@ export const GlobalStyles = createGlobalStyle`
   }
   body {
       background-color: ${(props) => props.theme.bgColor};
-      color: rgb(38,38,38);
+      color: ${(props) => props.theme.fontColor};
       font-family: 'Open Sans', sans-serif;
       font-size: 14px;
   }

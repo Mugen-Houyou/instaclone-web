@@ -60,9 +60,12 @@ function SignUp({ setIsLoggedIn }) {
     register , 
     handleSubmit,  
     formState: { isValid, errors }, 
+    getValues,
     setError,
     clearErrors
   } = useForm({mode:"onChange"});
+
+  const {username, password} = getValues();
 
   const onSubmitValid = (loginData ) => {
     if (loading) return;
@@ -70,17 +73,17 @@ function SignUp({ setIsLoggedIn }) {
       variables:{
         ...loginData
     }})
-  }
+  };
+
   const onCompleted = (loginData) => {
     const {createAccount: {ok, error}} = loginData;
     if (!ok) setError("result", { message: error }); // 즉, error.result.message을 백엔드의 GraphQL에서 받아오는 값으로.
-    navigate(routes.home);
+    navigate(routes.home, {state:{message:"Account created. Please log in!", username, password}});
   };
 
   const [createAccountMutationFunction, { loading }] = useMutation(CREATE_ACCOUNT_MUTATION,{
       onCompleted,
   }); //hook
-
 
   return (
     <AuthLayout>
@@ -157,7 +160,6 @@ function SignUp({ setIsLoggedIn }) {
         </form>
       </FormBox>
       
-
       <FormError message={errors?.result?.message} />
 
       <BottomBox
