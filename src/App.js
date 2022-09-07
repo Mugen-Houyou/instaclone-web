@@ -12,6 +12,7 @@ import { darkTheme, GlobalStyles, lightTheme } from "./styles";
 import SignUp from './screens/SignUp';
 import routes from "./routes";
 import { HelmetProvider } from 'react-helmet-async';
+import Layout from './components/Layout';
 
 function App() {
   //const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -25,7 +26,7 @@ function App() {
         <Router>
           <Routes> {/* Switch는 한번에 딱 하나의 Route만 render시켜줘.*/}
             <Route path={routes.home} exact element={ /* exact는 정확히 /에 해당하는 것만. */
-              isLoggedIn ?<Home  />:<Login  />} 
+              isLoggedIn ?<Layout><Home/></Layout>:<Login  />} 
             /> 
 
             {!isLoggedIn ? (
