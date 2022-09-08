@@ -53,7 +53,7 @@ function Login({ setIsLoggedIn }) {
   // const togglePotato = () => setPotato((current) => !current);
 
   const location = useLocation();
-  console.log(location)
+  //console.log(location)
 
   const {
     register,

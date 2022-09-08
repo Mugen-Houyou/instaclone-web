@@ -1,5 +1,5 @@
-import {ApolloClient, InMemoryCache, makeVar} from "@apollo/client";
-
+import {ApolloClient, createHttpLink, InMemoryCache, makeVar} from "@apollo/client";
+import { setContext } from '@apollo/client/link/context';
 import { NavigateFunction } from "react-router-dom";
 
 import routes from "./routes";
@@ -13,29 +13,40 @@ export const MIN_PW_LEN = 6;
 export const isLoggedInVar = makeVar(localStorage.getItem(TOKEN));
 export const darkModeVar = makeVar(localStorage.getItem(DARK_MODE));
 
+const httpLink = createHttpLink({
+  uri: "http://localhost:4000/graphql",
+});
+
+const authLink = setContext((_, {headers}) =>{
+  return {headers: {
+    ...headers,
+    token: localStorage.getItem(TOKEN), // 백엔드의 server.js의 27번째 줄의 return { loggedInUser: await getUser(ctx.req.headers.token), }
+  }}}
+);
+
+export const aClient = new ApolloClient({
+  link: authLink.concat(httpLink), // httpLink에 authLink를 concat.
+  cache: new InMemoryCache()
+});
+
 export const enableDarkMode = () => {
   localStorage.setItem(DARK_MODE, "true");
   darkModeVar(true);
-}
+};
 
 export const disableDarkMode = () => {
   localStorage.removeItem(DARK_MODE);
   darkModeVar(false);
-}
-
-export const aClient = new ApolloClient({
-  uri: "http://localhost:4000/graphql",
-  cache: new InMemoryCache()
-})
+};
 
 export const logUserIn = (token) => {
   localStorage.setItem(TOKEN,token);
   isLoggedInVar(true);
-} 
+} ;
 
 export const logUserOut = (nvgt ) => {
   localStorage.removeItem(TOKEN);
   //isLoggedInVar(false);
   window.location.reload();
   nvgt(routes.home, { replace: true });
-} 
+} ;
