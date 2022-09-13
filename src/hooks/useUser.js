@@ -5,9 +5,10 @@ import { isLoggedInVar, logUserOut } from "../apollo";
 const ME_QUERY = gql`
   query me {
     me {
+      id
       username
       avatar
-    }
+    } 
   }
 `;
 
@@ -21,7 +22,7 @@ function useUser() {
       logUserOut();
     }
   }, [data]);// useEffect는 hook 마운트 시 한 번 실행, 이후 데이터 변경 때마다 실행.
-  return;
+  return {data};
 }
 
 export default useUser;
