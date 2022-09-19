@@ -5,11 +5,21 @@ import { faBookmark, faComment, faHeart, faPaperPlane } from "@fortawesome/free-
 import {faHeart as SolidHeart} from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import styled from "styled-components";
+import { gql, useMutation } from "@apollo/client";
 
-import { logUserOut } from "../apollo";
+import { logUserOut } from "../../apollo";
 import Avatar from "../Avatar";
 import { FatText } from "../shared/shared";
 
+
+const TOGGLE_LIKE_MUTATION = gql`
+  mutation toggleLike($id:Int!){
+    toggleLike(id:$id){
+      ok
+      error
+    }
+  }
+`;
 
 const PhotoContainer = styled.div`
   background-color: white;
@@ -47,6 +57,7 @@ const PhotoActions = styled.div`
 
 const PhotoAction = styled.div`
   margin-right: 10px;
+  cursor:pointer;
 `;
 
 const Likes = styled(FatText)`
@@ -60,36 +71,55 @@ const Username = styled(FatText)`
 
 
 
-const Photo = () => 
-    <PhotoContainer key={photo.id}>
-      <PhotoHeader>
-        <Avatar url={photo.user.avatar}></Avatar>
-        <Username>{photo.user.username}</Username>  
-      </PhotoHeader>
-      <PhotoFile  src={photo.file} ></PhotoFile>
-      <PhotoData>
-        <PhotoActions>
-          <div>
-            <PhotoAction>
-              <FontAwesomeIcon style={{color:photo.isLiked?"tomato":"inherit"}} size={"2x"} icon={photo.isLiked? SolidHeart : faHeart} />
-            </PhotoAction>
-            <PhotoAction>
-              <FontAwesomeIcon size={"2x"} icon={faComment} />
-            </PhotoAction>
-            <PhotoAction>
-              <FontAwesomeIcon size={"2x"} icon={faPaperPlane} />
-            </PhotoAction>
-          </div>
-          <div> 
-            <FontAwesomeIcon size={"2x"} icon={faBookmark} />
-          </div>
-        </PhotoActions>
-        <Likes>{photo.likes===1?"1 Like": `${photo.likes} Likes`}</Likes>
-      </PhotoData>
-    </PhotoContainer>;
+const Photo = ({ id, user, file, isLiked, likes }) => {
+  const [toggleLikeMutation , {loading}] = useMutation(TOGGLE_LIKE_MUTATION, {
+    variables:{
+      id
+    }
+  });
+
+  return <PhotoContainer key={id}>
+    <PhotoHeader>
+      <Avatar url={user.avatar}></Avatar>
+      <Username>{user.username}</Username>
+    </PhotoHeader>
+    <PhotoFile src={file}></PhotoFile>
+    <PhotoData>
+      <PhotoActions>
+        <div>
+          <PhotoAction onClick={toggleLikeMutation} >
+            <FontAwesomeIcon
+              style={{ color: isLiked ? "tomato" : "inherit" }}
+              size={"2x"}
+              icon={isLiked ? SolidHeart : faHeart}
+            />
+          </PhotoAction>
+          <PhotoAction>
+            <FontAwesomeIcon size={"2x"} icon={faComment} />
+          </PhotoAction>
+          <PhotoAction>
+            <FontAwesomeIcon size={"2x"} icon={faPaperPlane} />
+          </PhotoAction>
+        </div>
+        <div>
+          <FontAwesomeIcon size={"2x"} icon={faBookmark} />
+        </div>
+      </PhotoActions>
+      <Likes>{likes === 1 ? "1 Like" : `${likes} Likes`}</Likes>
+    </PhotoData>
+  </PhotoContainer>;
+}
+
 
 Photo.propTypes = {
-  id, user, file, isLiked, likes
-}
+  id: PropTypes.number.isRequired,
+  user: PropTypes.shape({
+    avatar: PropTypes.string,
+    username: PropTypes.string.isRequired,
+  }),
+  file: PropTypes.string.isRequired,
+  isLiked: PropTypes.bool.isRequired,
+  likes: PropTypes.number.isRequired,
+};
 
 export default Photo;

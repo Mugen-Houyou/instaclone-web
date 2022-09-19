@@ -1,13 +1,7 @@
 import { gql, useQuery } from "@apollo/client";
-import { faBookmark, faComment, faHeart, faPaperPlane } from "@fortawesome/free-regular-svg-icons";
-import {faHeart as SolidHeart} from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import styled from "styled-components";
 
-import { logUserOut } from "../apollo";
 import Avatar from "../components/Avatar";
 import Photo from "../components/feed/Photo";
-import { FatText } from "../components/shared/shared";
 
 const FEED_QUERY = gql`
   query seeFeed {
@@ -33,7 +27,10 @@ function Home({ setIsLoggedIn }) {
   console.log(data);
   return <div>
   {data?.seeFeed?.map(photo => 
-    <Photo></Photo>
+    <Photo
+      key={photo.id}
+      {...photo}
+    />
   )}
   </div>;
   
