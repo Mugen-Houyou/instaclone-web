@@ -69,17 +69,67 @@ const Username = styled(FatText)`
   margin-left: 15px;
 `;
 
-
-
 const Photo = ({ id, user, file, isLiked, likes }) => {
+
+  const updateToggleLike = (cache, result) => {
+    const {
+      data: {
+        toggleLike: { ok },
+      },
+    } = result;
+    
+    if (ok ) {// 함수 Photo의 파라메타가 ({ id, user, file })일 경우. 즉 Photo가 isLiked, likes가 없을 경우.
+      const fragmentId = `Photo:${id}`;
+      const fragment =  gql`
+        fragment Asdfasdfname on Photo{
+          isLiked
+          likes
+        }
+      `;
+      const result = cache.readFragment({ 
+        id:fragmentId,
+        fragment: fragment,
+      });
+
+      if ("isLiked" in result && "likes" in result) {
+        const { isLiked: cacheIsLiked, likes: cacheLikes } = result;
+        cache.writeFragment({
+          id: fragmentId,
+          fragment,
+          data: {
+            isLiked: !cacheIsLiked,
+            likes: cacheIsLiked ? cacheLikes - 1 : cacheLikes + 1,
+          },
+        });
+      }
+    }
+  };
+    /* if (ok ) cache.writeFragment({함수 Photo의 파라메타가 ({ id, user, file, isLiked, likes})일 경우. 
+      // 즉 Photo에 isLiked, likes 있을 경우.
+      id:`Photo:${id}`,
+      fragment:gql`
+        fragment Asdfasdfname on Photo{
+          isLiked
+          likes
+        }
+      `;
+      data:{
+        isLiked: !isLiked,
+        likes: isLiked ? likes-1 : likes+1,
+      } 
+    });
+  } */
+
   const [toggleLikeMutation , {loading}] = useMutation(TOGGLE_LIKE_MUTATION, {
     variables:{
       id
-    }
+    },
+    // refetchQueries: []  query를 refetch한다, 즉 mutation을 실행하고 백엔드의 response에 error 없다면 한번 더 call한다.
+    update: updateToggleLike // update는 백엔드에서 data 받아오고 그걸 cache에 직접 연결시켜줌.
   });
 
   return <PhotoContainer key={id}>
-    <PhotoHeader>
+    <PhotoHeader> 
       <Avatar url={user.avatar}></Avatar>
       <Username>{user.username}</Username>
     </PhotoHeader>
