@@ -8,7 +8,7 @@ import React from "react";
 import { FatText } from "../shared/shared";
 
 const CommentContainer = styled.div`
-
+  margin-bottom: 7px;
 `;
 
 const CommentCaption = styled.span`

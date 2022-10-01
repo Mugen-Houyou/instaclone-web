@@ -84,32 +84,50 @@ const Photo = ({
         toggleLike: { ok },
       },
     } = result;
-    
-    if (ok ) {// 함수 Photo의 파라메타가 ({ id, user, file })일 경우. 즉 Photo가 isLiked, likes가 없을 경우.
-      const fragmentId = `Photo:${id}`;
-      const fragment =  gql`
-        fragment Asdfasdfname on Photo{
-          isLiked
-          likes
-        }
-      `;
-      const result = cache.readFragment({ 
-        id:fragmentId,
-        fragment: fragment,
-      });
 
-      if ("isLiked" in result && "likes" in result) {
-        const { isLiked: cacheIsLiked, likes: cacheLikes } = result;
-        cache.writeFragment({
-          id: fragmentId,
-          fragment,
-          data: {
-            isLiked: !cacheIsLiked,
-            likes: cacheIsLiked ? cacheLikes - 1 : cacheLikes + 1,
+
+    if (ok) { // r/w fragment보다 훨씬 쉬움
+      const photoId = `Photo:${id}`;
+      cache.modify({
+        id: photoId,
+        fields: {
+          isLiked(prevVal){
+            return !prevVal;
           },
-        });
-      }
+          likes(prevVal){
+            if(isLiked) return prevVal-1;
+            else return prevVal-1;
+          }
+        }
+      });
     }
+
+    
+    // if (ok ) {// 함수 Photo의 파라메타가 ({ id, user, file })일 경우. 즉 Photo가 isLiked, likes가 없을 경우.
+    //   const fragmentId = `Photo:${id}`;
+    //   const fragment =  gql`
+    //     fragment Asdfasdfname on Photo{
+    //       isLiked
+    //       likes
+    //     }
+    //   `;
+    //   const result = cache.readFragment({ 
+    //     id:fragmentId,
+    //     fragment: fragment,
+    //   });
+
+    //   if ("isLiked" in result && "likes" in result) {
+    //     const { isLiked: cacheIsLiked, likes: cacheLikes } = result;
+    //     cache.writeFragment({
+    //       id: fragmentId,
+    //       fragment,
+    //       data: {
+    //         isLiked: !cacheIsLiked,
+    //         likes: cacheIsLiked ? cacheLikes - 1 : cacheLikes + 1,
+    //       },
+    //     });
+    //   }
+    //}
   };
     /* if (ok ) cache.writeFragment({함수 Photo의 파라메타가 ({ id, user, file, isLiked, likes})일 경우. 
       // 즉 Photo에 isLiked, likes 있을 경우.
@@ -164,6 +182,7 @@ const Photo = ({
       </PhotoActions>
       <Likes>{likes === 1 ? "1 Like" : `${likes} Likes`}</Likes>
       <Comments
+        photoId={id}
         author={user.username}
         caption={caption}
         commentNumber={commentNumber}
