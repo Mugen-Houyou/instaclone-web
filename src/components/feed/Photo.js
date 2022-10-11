@@ -11,6 +11,7 @@ import { logUserOut } from "../../apollo";
 import Avatar from "../Avatar";
 import { FatText } from "../shared/shared";
 import Comments from "./Comments";
+import { Link } from "react-router-dom";
 
 const TOGGLE_LIKE_MUTATION = gql`
   mutation toggleLike($id:Int!){
@@ -155,8 +156,12 @@ const Photo = ({
 
   return <PhotoContainer key={id}>
     <PhotoHeader> 
-      <Avatar url={user.avatar}></Avatar>
-      <Username>{user.username}</Username>
+      <Link to={`/users/${user.username}`}>
+        <Avatar url={user.avatar}></Avatar>
+      </Link>
+      <Link to={`/users/${user.username}`}>
+        <Username>{user.username}</Username>
+      </Link>
     </PhotoHeader>
     <PhotoFile src={file}></PhotoFile>
     <PhotoData>

@@ -26,7 +26,13 @@ const authLink = setContext((_, {headers}) =>{
 
 export const aClient = new ApolloClient({
   link: authLink.concat(httpLink), // httpLink에 authLink를 concat.
-  cache: new InMemoryCache()
+  cache: new InMemoryCache({
+    typePolicies: {
+      User: {
+        keyFields: (obj) => `User:${obj.username}`,
+      },
+    },
+  })
 });
 
 export const enableDarkMode = () => {

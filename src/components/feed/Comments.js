@@ -1,7 +1,7 @@
 import { gql, useMutation } from "@apollo/client";
 import PropTypes from "prop-types";
 import { useForm } from "react-hook-form";
-import { unstable_HistoryRouter } from "react-router-dom";
+import { Link, unstable_HistoryRouter } from "react-router-dom";
 import styled from "styled-components";
 
 import Comment from "./Comment";
@@ -29,9 +29,25 @@ const CommentCount = styled.span`
   font-size: 10px;
 `;
 
+const PostCommentContainer = styled.div`
+  margin-top: 10px;
+  padding-top: 15px;
+  padding-bottom: 10px;
+  border-top: 1px solid ${(props) => props.theme.borderColor};
+`;
+
+const PostCommentInput = styled.input`
+  width: 100%;
+  &::placeholder {
+    font-size: 12px;
+  }
+`;
+
+
 function Comments({ photoId, author, caption, commentNumber, comments }) {
   const {data :userData} = useUser();
   const {register, handleSubmit, setValue, getValues} = useForm();
+
   const createCommentUpdate = (cache, result ) => {
     const {payload  } = getValues();
     setValue("payload","");
@@ -62,17 +78,22 @@ function Comments({ photoId, author, caption, commentNumber, comments }) {
           }
         `,
       });
+      console.log(newCacheComment)
+
       cache.modify({
         id: `Photo:${photoId}`,
-        fields:{comments(prevVal){
-          return [...prevVal, newComment];
-        }},
-        commentNumber(prevVal) {
-          return prevVal + 1;
+        fields:{
+          comments(prev){
+            return [...prev, newCacheComment];
+          },
+          commentNumber(prev) {
+            return prev + 1;
+          }
         },
       })
     }
   }
+
   const [createCommentMutation, {loading}]  = useMutation(
     CREATE_COMMENT_MUTATION, {
       update: createCommentUpdate,    
@@ -98,20 +119,23 @@ function Comments({ photoId, author, caption, commentNumber, comments }) {
     {comments?.map((comment) => (
       <Comment
         key={comment.id}
+        id={comment.id}
         author={comment.user.username}
+        photoId={photoId}
         payload={comment.payload}
+        isMine={comment.isMine}
       />
     ))}
-    <div>
+    <PostCommentContainer>
       <form onSubmit={handleSubmit(onValid)}>
-        <input 
+        <PostCommentInput 
           name="payload"
           {...register("payload", { required: true })}
           type="text" 
           placeholder="Write a comment here..." 
         />
       </form>
-    </div>
+    </PostCommentContainer>
   </CommentsContainer>;
 }
 
