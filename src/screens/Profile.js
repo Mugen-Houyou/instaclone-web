@@ -1,4 +1,4 @@
-import { gql, useMutation, useQuery } from "@apollo/client";
+import { gql, useApolloClient, useMutation, useQuery } from "@apollo/client";
 import { faHeart, faComment } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { unstable_HistoryRouter, useParams } from "react-router-dom";
@@ -8,6 +8,7 @@ import Button from "../components/auth/Button";
 import PageTitle from "../components/PageTitle";
 import { FatText } from "../components/shared/shared";
 import { PHOTO_FRAGMENT } from "../fragments";
+import useUser from "../hooks/useUser";
 
 const FOLLOW_USER_MUTATION = gql`
   mutation followUser($username: String!) {
@@ -135,18 +136,73 @@ const ProfileBtn = styled(Button).attrs({
 
 function Profile() {
   const { username } = useParams(); // 이 useParams()는 URL의 파라메타가 담긴 객체를 리턴.
+
+  const {data:userData} = useUser();
+
+  const aclient = useApolloClient();
   
   const { data, loading } = useQuery(SEE_PROFILE_QUERY, {
     variables: {username,},
   });
 
+  const followUserCompleted = (data) => {  
+    const {followUser:{ok}} = data;
+    if (!ok) return;
+    const {cache} = aclient;
+    cache.modify({
+      id:`User:${username}`,
+      fields: {
+        isFollowing(prev){ // 함수 이름은 query에서 가져옴.
+          return true;
+        },
+        totalFollowers(prev){
+          return prev+1;
+        }
+      }
+    });
+    const { me } = userData;// 내 userdata에서도 하나 더해줘야 함.
+    cache.modify({
+      id: `User:${me.username}`,
+      fields: {
+        totalFollowing(prev) {
+          return prev + 1;
+        },
+      },
+    });
+  }
+  const unfollowUserUpdate = (cache, result ) => {
+    const {data:{unfollowUser:{ok}}} = result;
+    if (!ok) return;
+    cache.modify({
+      id:`User:${username}`,
+      fields: {
+        isFollowing(prev){ // 함수 이름은 query에서 가져옴.
+          return false;
+        },
+        totalFollowers(prev){
+          return prev-1;
+        }
+      }
+    });
+    const { me } = userData; // 내 userdata에서도 하나 빼줘야 함.
+    cache.modify({
+      id: `User:${me.username}`,
+      fields: {
+        totalFollowing(prev) {
+          return prev-1;
+        },
+      },
+    });
+  }
+
+
   const [followUser] = useMutation(FOLLOW_USER_MUTATION, {
     variables:{username,},
-    refetchQueries:[{query:SEE_PROFILE_QUERY, variables:{username}}],
+    onCompleted:followUserCompleted,
   });
   const [unfollowUser] = useMutation(UNFOLLOW_USER_MUTATION, {
     variables:{username,},
-    refetchQueries:[{query:SEE_PROFILE_QUERY, variables:{username}}],
+    update:unfollowUserUpdate,
   });
   
   const getButton = (seeProfile) => {
